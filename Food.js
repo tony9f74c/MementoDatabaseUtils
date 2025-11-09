@@ -8,24 +8,46 @@ function parsePerUnit(value) {
 function updateCosts(currentLib, transactionsLib) {
     let records      = currentLib.entries();
     let transactions = transactionsLib.entries();
+
+    const now = new Date();
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(now.getMonth() - 3);
+
     records.forEach(record => {
-        const currentItem  = record.field('Item');
-        const currentBrand = record.field('Brand');
-        const currentDetails = record.field('Details');
-        const filtered = transactions
-            .filter(t =>
-                t.field('Item') === currentItem &&
-                t.field('Brand') === currentBrand &&
-                t.field('Details') === currentDetails
-            )
-            .sort((a, b) => new Date(b.field('Date')) - new Date(a.field('Date'))) // newest first
-            .slice(0, 5); // latest 5
+        const currentItem = record.field('Item');
+        if (!currentItem) return;
+
+        // Filter by matching Item and within last 3 months
+        let filtered = transactions
+            .filter(t => {
+                const tItem = t.field('Item');
+                const tDate = new Date(t.field('Date'));
+                return tItem === currentItem && tDate >= threeMonthsAgo;
+            })
+            .sort((a, b) => new Date(b.field('Date')) - new Date(a.field('Date')));
+
+        // If no transactions in last 3 months, take the most recent one
+        if (filtered.length === 0) {
+            filtered = transactions
+                .filter(t => t.field('Item') === currentItem)
+                .sort((a, b) => new Date(b.field('Date')) - new Date(a.field('Date')))
+                .slice(0, 1);
+        } else {
+            // Otherwise, keep up to 5 recent ones within the 3-month window
+            filtered = filtered.slice(0, 5);
+        }
+
+        // Calculate average Per Unit
         const sum = filtered.reduce(
             (acc, t) => acc + parsePerUnit(t.field('Per Unit')),
             0
         );
+
         const avg = filtered.length ? sum / filtered.length : 0;
+
+        // Update the Cost (100g) field
         record.set('Cost (100g)', (avg / 10).toFixed(2));
     });
 }
+
 
