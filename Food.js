@@ -78,34 +78,32 @@ function averageCosts(currentLib, productsLib) {
     });
 }
 
+function parseNutritionalInfo(nutritionStr) {
+    let result = {};
+    if (!nutritionStr) return result;
+
+    // Split by lines, handle \r\n or \n
+    let lines = nutritionStr.split(/\r?\n/).filter(Boolean);
+
+    lines.forEach(line => {
+        let [key, val] = line.split(':');
+        if (key && val !== undefined) {
+            result[key.trim()] = parseFloat(val.trim()) || 0;
+        }
+    });
+
+    return result;
+}
+
+function nutritionalInfoToString(obj) {
+    return Object.entries(obj)
+        .map(([key, val]) => `${key}: ${val.toFixed(2)}`)
+        .join('\n');
+}
+
 function averageNutritionalInfo(currentLib, productsLib) {
     let records  = currentLib.entries();
     let products = productsLib.entries();
-
-    // Helper to parse the Nutritional info string into an object
-    function parseNutritionalInfo(nutritionStr) {
-        let result = {};
-        if (!nutritionStr) return result;
-
-        // Split by lines, handle \r\n or \n
-        let lines = nutritionStr.split(/\r?\n/).filter(Boolean);
-
-        lines.forEach(line => {
-            let [key, val] = line.split(':');
-            if (key && val !== undefined) {
-                result[key.trim()] = parseFloat(val.trim()) || 0;
-            }
-        });
-
-        return result;
-    }
-
-    // Helper to convert object back to string
-    function nutritionalInfoToString(obj) {
-        return Object.entries(obj)
-            .map(([key, val]) => `${key}: ${val.toFixed(2)}`)
-            .join('\n');
-    }
 
     records.forEach(record => {
         const currentItem    = record.field('Item');
@@ -130,7 +128,7 @@ function averageNutritionalInfo(currentLib, productsLib) {
 
         // Sum each nutrient
         matchingProducts.forEach(p => {
-            const nutrition = parseNutritionalInfo(p.field('Nutritional info'));
+            const nutrition = parseNutritionalInfo(p.field('Nutritional info (100g)'));
             nutrientKeys.forEach(key => {
                 sumNutrients[key] += nutrition[key] || 0;
             });
@@ -143,6 +141,6 @@ function averageNutritionalInfo(currentLib, productsLib) {
         });
 
         // Update the field in the current record
-        record.set('Nutritional info', nutritionalInfoToString(avgNutrients));
+        record.set('Nutritional info (100g)', nutritionalInfoToString(avgNutrients));
     });
 }
