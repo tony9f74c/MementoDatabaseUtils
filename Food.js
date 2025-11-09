@@ -50,4 +50,31 @@ function updateCosts(currentLib, transactionsLib) {
     });
 }
 
+function averageCosts(currentLib, productsLib) {
+    let records  = currentLib.entries();
+    let products = productsLib.entries();
+
+    records.forEach(record => {
+        const currentItem    = record.field('Item');
+        const currentDetails = record.field('Details');
+        if (!currentItem) return;
+
+        // Filter matching products by both Item and Details
+        const matchingProducts = products.filter(p =>
+            p.field('Item') === currentItem &&
+            p.field('Details') === currentDetails
+        );
+
+        // Parse and average Cost (100g)
+        const sum = matchingProducts.reduce((acc, p) => {
+            const cost = parsePerUnit(p.field('Cost (100g)')); // reuse your parsePerUnit
+            return acc + cost;
+        }, 0);
+
+        const avg = matchingProducts.length ? sum / matchingProducts.length : 0;
+
+        // Update the Cost (100g) field
+        record.set('Cost (100g)', avg.toFixed(2));
+    });
+}
 
