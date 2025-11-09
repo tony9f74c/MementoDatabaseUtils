@@ -1,13 +1,13 @@
+function parsePerUnit(value) {
+    if (!value) return 0;
+    const cleaned = value.replace(/[^\d.-]/g, ''); // Remove currency symbols, letters, spaces, commas
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+}
+
 function updateCosts(currentLib, transactionsLib) {
     let records         = currentLib.entries();
     let transactions    = transactionsLib.entries();
-
-    function parsePerUnit(value) {
-        if (!value) return 0;
-        const cleaned = value.replace(/[^\d.-]/g, ''); // Remove currency symbols, letters, spaces, commas…
-        const num = parseFloat(cleaned);
-        return isNaN(num) ? 0 : num;
-    }
 
     records.forEach(record => {
         const currentItem = record.field('Item');
