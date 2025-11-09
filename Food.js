@@ -20,7 +20,7 @@ function updateCosts(currentLib, transactionsLib) {
             0
         );
         const avg = filtered.length ? sum / filtered.length : 0;
-        record.set('Cost', avg.toFixed(2));
+        record.set('Cost (100g)', avg.toFixed(2));
     });
 }
 
