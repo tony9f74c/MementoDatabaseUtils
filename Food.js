@@ -96,9 +96,13 @@ function parseNutritionalInfo(nutritionStr) {
 }
 
 function nutritionalInfoToString(obj) {
-    return Object.entries(obj)
-        .map(([key, val]) => `${key}: ${val.toFixed(2)}`)
-        .join('\n');
+    let lines = [];
+    for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            lines.push(key + ': ' + obj[key].toFixed(2));
+        }
+    }
+    return lines.join('\n');
 }
 
 function averageNutritionalInfo(currentLib, productsLib) {
